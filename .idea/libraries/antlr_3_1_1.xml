@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="antlr-3.1.1">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/TP6_intermediaire/bin/antlr-3.1.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
