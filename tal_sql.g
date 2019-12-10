@@ -30,8 +30,15 @@ MOT : 'mot'
 WS  : (' ' |'\t' | '\r' | 'je' | 'qui' | 'dont') {skip();} | '\n' 
 ;
 
-VAR 	: ('A'..'Z' | 'a'..'z') ('a'..'z')+
+VAR 	: ('A'..'Z'|'a'..'z')+
 ;
+ANNEE	: ('1'|'2')('0'..'9')('0'..'9')('0'..'9')
+;
+JOUR	: ('1'|'2'|'3')('0'..'9')
+;
+MOIS	:  ('0')('1'..'9')| ('1')('0'..'2')
+;
+
 
 listerequetes returns [String sql = ""]
 	@init	{Arbre lr_arbre, par_arbre;}: 
@@ -40,13 +47,7 @@ listerequetes returns [String sql = ""]
 				lr_arbre = $r.req_arbre;
 				sql = lr_arbre.sortArbre();
 			}
-		(par2 = requete
-			{
-				par_arbre = $par2.req_arbre;
-				lr_arbre.ajouteFils(new Arbre("", "1OR"));
-				lr_arbre.ajouteFils(par_arbre);
-			}
-		)?
+		
 ;
 
 requete returns [Arbre req_arbre = new Arbre("")]
@@ -56,16 +57,12 @@ requete returns [Arbre req_arbre = new Arbre("")]
 				req_arbre.ajouteFils(new Arbre("","select distinct "));
 			} 
 			
-		ob = objets
+		ob = objet
 			{
-				ps_arbre = $ob.objets_arbre;
+				ps_arbre = $ob.obj_arbre;
 				req_arbre.ajouteFils(ps_arbre);
 			}
-		(MOT
-			{
-				//req_arbre.ajouteFils(new Arbre("","from "));
-				req_arbre.ajouteFils(new Arbre("","where "));
-			})?
+		
 		ps = params 
 			{
 				ps_arbre = $ps.les_pars_arbre;
@@ -73,7 +70,8 @@ requete returns [Arbre req_arbre = new Arbre("")]
 			}
 			
 ;
-objets returns [Arbre objets_arbre = new Arbre("")]
+
+/*objets returns [Arbre objets_arbre = new Arbre("")]
 	@init	{Arbre objet1_arbre, objet2_arbre;} : 
 		
 		(objet1 = objet 
@@ -89,10 +87,11 @@ objets returns [Arbre objets_arbre = new Arbre("")]
 				objets_arbre.ajouteFils(objet2_arbre);
 			}
 		
-;
-objetfin returns [Arbre objfin_arbre = new Arbre("")]
+;*/
+
+/*objetfin returns [Arbre objfin_arbre = new Arbre("")]
 	@init {Arbre obj2_arbre;} : 
-		(PERIODE
+		/*(PERIODE
 			{
 			objfin_arbre.ajouteFils(new Arbre("","period"));
 			})?
@@ -110,52 +109,52 @@ objetfin returns [Arbre objfin_arbre = new Arbre("")]
 			}
 		 | BULLETIN
 			{
-			objfin_arbre.ajouteFils(new Arbre("","numero from"));
+			objfin_arbre.ajouteFils(new Arbre("","numero from "));
 			}
-		/*| AUTEUR
+		| AUTEUR
 			{
 			objfin_arbre.ajouteFils(new Arbre("","auteur from"));
-			}*/
+			}
 		| RUBRIQUE
 			{
 			objfin_arbre.ajouteFils(new Arbre("","rubrique from"));
 			}
-		/*| IMAGE
+		| IMAGE
 			{
 			objfin_arbre.ajouteFils(new Arbre("","image"));
-			}*/
+			}
 		| CONTACT
 			{
-			objfin_arbre.ajouteFils(new Arbre("","email from "));
+			objfin_arbre.ajouteFils(new Arbre("","email from public.email"));
 			}
 		| DATE
 			{
 			objfin_arbre.ajouteFils(new Arbre("","jour,mois,annee from public.date"));
 			}
 		)
-;
+;*/
 objet returns [Arbre obj_arbre = new Arbre("")]
 	@init {Arbre obj1_arbre;} : 
-		(PERIODE
+		/*(PERIODE
 			{
-			obj_arbre.ajouteFils(new Arbre("","period"));
+			obj_arbre.ajouteFils(new Arbre("","period "));
+			})?*/
+		
+		((NOMBRE
+			{
+			obj_arbre.ajouteFils(new Arbre("","count "));
 			})?
-		(NOMBRE
+		  (ARTICLE
 			{
-				obj_arbre.ajouteFils(new Arbre("","nombre"));
+			obj_arbre.ajouteFils(new Arbre("","fichier "));
+			obj_arbre.ajouteFils(new Arbre("","from public.titretexte tt"));
 			}
-		|ORDRE
+		
+		  |BULLETIN
 			{
-				obj_arbre.ajouteFils(new Arbre("","ordre"));
-			})?
-		(ARTICLE
-			{
-				obj_arbre.ajouteFils(new Arbre("","titre,"));
-			}
-		 | BULLETIN
-			{
-			obj_arbre.ajouteFils(new Arbre("","bulletin,"));
-			}
+			obj_arbre.ajouteFils(new Arbre("","numero "));
+			obj_arbre.ajouteFils(new Arbre("","from public.titretexte tt"));
+			})
 		| AUTEUR
 			{
 			obj_arbre.ajouteFils(new Arbre("","auteur,"));
@@ -174,57 +173,172 @@ objet returns [Arbre obj_arbre = new Arbre("")]
 			}
 		| DATE
 			{
-			obj_arbre.ajouteFils(new Arbre("","date,"));
+			obj_arbre.ajouteFils(new Arbre("","jour,mois,annee from public.date d where"));
 			}
 		)
 ;
 params returns [Arbre les_pars_arbre = new Arbre("")]
-	@init	{Arbre par1_arbre, par2_arbre;} : 
+	@init	{Arbre par1_arbre, par2_arbre;String p;} : 
 		
-		par1 = param 
+		par1 = parambegin 
 			{
-				par1_arbre = $par1.lepar_arbre;
-				/les_pars_arbre.ajouteFils(new Arbre("", "evénement"));
+				par1_arbre = $par1.parb_arbre;
+				//les_pars_arbre.ajouteFils(new Arbre("", "evénement"));
 				les_pars_arbre.ajouteFils(par1_arbre);
+				
+				les_pars_arbre.ajouteFils(new Arbre(""));
 			}
-		( par2 = params
+		(( par2 = param
 			{
-				par2_arbre = $par2.les_pars_arbre;
-				les_pars_arbre.ajouteFils(new Arbre("", "2OR"));
+				par2_arbre = $par2.lepar_arbre;
+				//les_pars_arbre.ajouteFils(new Arbre("", "2OR"));
 				les_pars_arbre.ajouteFils(par2_arbre);
 			}
-		)?
+		)+)?
 ;
 
-param returns [Arbre lepar_arbre = new Arbre("")] 
-	@init	{Arbre par0_arbre;} :
-		(ARTICLE
+parambegin returns [Arbre parb_arbre = new Arbre("")] 
+	@init	{String t = "mot";String p = "=";} :
+		
+		MOT
 			{
-				obj_arbre.ajouteFils(new Arbre("","titre,"));
+				//req_arbre.ajouteFils(new Arbre("","from "));
+				parb_arbre.ajouteFils(new Arbre("","where "));
+			}
+		  a = VAR
+			{ 
+			parb_arbre.ajouteFils(new Arbre("tt.mot = ", "'"+a.getText()+"'"));
+			}
+		
+		|ARTICLE
+			{
+				//req_arbre.ajouteFils(new Arbre("","from "));
+				parb_arbre.ajouteFils(new Arbre("","where tt.mot "));
+			}
+		  a = VAR
+			{ 
+			parb_arbre.ajouteFils(new Arbre(" = ", "'"+a.getText()+"'"));
 			}
 		
 		| AUTEUR
 			{
-			obj_arbre.ajouteFils(new Arbre("","auteur,"));
+			parb_arbre.ajouteFils(new Arbre("",",public.email e where e.email "));
+			}
+		  a = VAR
+			{ 
+			parb_arbre.ajouteFils(new Arbre("like ", "'\%"+a.getText()+"\%'"));
 			}
 		| RUBRIQUE
 			{
-			obj_arbre.ajouteFils(new Arbre("","rubrique,"));
+			parb_arbre.ajouteFils(new Arbre("","where rubrique "));
+			}
+		   a = VAR
+			{ 
+			parb_arbre.ajouteFils(new Arbre("like ", "'\%"+a.getText()+"\%'"));
 			}
 		| IMAGE
 			{
-			obj_arbre.ajouteFils(new Arbre("","image,"));
+			parb_arbre.ajouteFils(new Arbre("","where image "));
+			}
+		  a = VAR
+			{ 
+			parb_arbre.ajouteFils(new Arbre("= ", "'"+a.getText()+"'"));
 			}
 		| CONTACT
 			{
-			obj_arbre.ajouteFils(new Arbre("","email = "));
+			parb_arbre.ajouteFils(new Arbre("","public.email e where e.email "));
+			}
+		   a = VAR
+			{ 
+			parb_arbre.ajouteFils(new Arbre("like ", "'\%"+a.getText()+"\%'"));
 			}
 		| DATE
 			{
-			obj_arbre.ajouteFils(new Arbre("","date,"));
+			parb_arbre.ajouteFils(new Arbre("","public.date d where e.email "));
 			}
-		)
-	a = VAR
-		{ lepar_arbre.ajouteFils(new Arbre("mot =", "'"+a.getText()+"'"));}
+
+		( b = ANNEE
+			{
+			parb_arbre.ajouteFils(new Arbre("from public.date where annee"+"'"+b.getText()+"'"));
+			}
+		| c = MOIS
+			{
+			parb_arbre.ajouteFils(new Arbre("from public.date where moi"+"'"+c.getText()+"'"));
+			}
+		| d = JOUR
+			{
+			parb_arbre.ajouteFils(new Arbre("from public.date where jour"+"'"+d.getText()+"'"));
+			}
+			)
 ;
 
+
+
+param returns [Arbre lepar_arbre = new Arbre("")] 
+	@init	{Arbre par0_arbre;String t = "mot";} :
+		  a = VAR
+			{ 
+			lepar_arbre.ajouteFils(new Arbre("intersect select distinct tt.fichier from public.titretexte tt where tt.mot = ", "'"+a.getText()+"'"));
+			}
+		
+		|ARTICLE
+			{
+			//req_arbre.ajouteFils(new Arbre("","from "));
+			lepar_arbre.ajouteFils(new Arbre("","and tt.mot "));
+			}
+		  a = VAR
+			{ 
+			lepar_arbre.ajouteFils(new Arbre(" = ", "'"+a.getText()+"'"));
+			}
+		
+		| AUTEUR
+			{
+			lepar_arbre.ajouteFils(new Arbre("","and e.email "));
+			}
+		  a = VAR
+			{ 
+			lepar_arbre.ajouteFils(new Arbre("like ", "'\%"+a.getText()+"\%'"));
+			}
+		| RUBRIQUE
+			{
+			lepar_arbre.ajouteFils(new Arbre("","and tt.rubrique "));
+			}
+		   a = VAR
+			{ 
+			lepar_arbre.ajouteFils(new Arbre("like ", "'\%"+a.getText()+"\%'"));
+			}
+		| IMAGE
+			{
+			lepar_arbre.ajouteFils(new Arbre("","where image "));
+			}
+		  a = VAR
+			{ 
+			lepar_arbre.ajouteFils(new Arbre("= ", "'"+a.getText()+"'"));
+			}
+		| CONTACT
+			{
+			lepar_arbre.ajouteFils(new Arbre("","intersect select distinct d.fichier from public.email e where e.email "));
+			}
+		   a = VAR
+			{ 
+			lepar_arbre.ajouteFils(new Arbre("like ", "'\%"+a.getText()+"\%'"));
+			}
+		| DATE
+			{
+			lepar_arbre.ajouteFils(new Arbre("","intersect select distinct d.fichier from public.date d where "));
+			}
+
+		( b = ANNEE
+			{
+			lepar_arbre.ajouteFils(new Arbre("annee = "+"'"+b.getText()+"'"));
+			}
+		| c = MOIS
+			{
+			lepar_arbre.ajouteFils(new Arbre("mois = "+"'"+c.getText()+"'"));
+			}
+		| d = JOUR
+			{
+			lepar_arbre.ajouteFils(new Arbre("jour = "+"'"+d.getText()+"'"));
+			}
+			)
+;
