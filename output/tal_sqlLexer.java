@@ -1,4 +1,4 @@
-package output;// $ANTLR 3.5.1 D:\\GI05\\LO17\\TP6_intermediaire-20191205T064650Z-001\\tal_sql.g 2019-12-12 00:01:34
+// $ANTLR 3.5.1 D:\\GI05\\LO17\\TP6_intermediaire-20191205T064650Z-001\\tal_sql.g 2019-12-12 00:01:34
 
 import org.antlr.runtime.*;
 import java.util.Stack;

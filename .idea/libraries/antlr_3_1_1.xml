@@ -2,6 +2,7 @@
   <library name="antlr-3.1.1">
     <CLASSES>
       <root url="jar://$PROJECT_DIR$/TP6_intermediaire/bin/antlr-3.1.1.jar!/" />
+      <root url="jar://D:/postgresql-9.0-801.jdbc4.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

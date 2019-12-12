@@ -1,4 +1,4 @@
-// $ANTLR 3.5.1 /voletu/users/wangyuhu/LO17/TP6/TP6_intermediaire/src/tal_inter.g 2019-11-14 13:41:52
+package output;// $ANTLR 3.5.1 /voletu/users/wangyuhu/LO17/TP6/TP6_intermediaire/src/tal_inter.g 2019-11-14 13:41:52
 
 import org.antlr.runtime.*;
 import java.util.Stack;

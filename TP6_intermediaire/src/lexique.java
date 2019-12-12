@@ -11,7 +11,7 @@ class Lexique{
             String chaine;
             try {
                   try {
-                        br = new BufferedReader(new FileReader("/voletu/user1x/users/zhouxing/LO17/P3/java/filtreCorpus_P16.txt"));
+                        br = new BufferedReader(new FileReader("D:/GI05/LO17/TP6_intermediaire-20191205T064650Z-001/TP6_intermediaire/buffers/filtreCorpus_P16.txt"));
                         //System.out.print("saisie : ");
                         while((chaine = br.readLine())!=null){
                               String[] mot_lemme = chaine.split(" \t");
@@ -150,6 +150,39 @@ class Lexique{
             a.addAll(set);
       }
 
+      public static ArrayList<String> Lemmetisation(ArrayList<String> sentence){
+          ArrayList<String> res = new ArrayList<String>();
+          String token;
+          String lemme;
+          Iterator<String> it = sentence.iterator();
+          while(it.hasNext()){
+              token = it.next();
+              token = toLowerCase(token);
+              lemme = findInDict(token);
+              if(lemme!=null){
+                  res.add(lemme);
+              }else{
+                  List<String>  lemmes_meilleur =  lemmes_prefixe(token, dict);
+                  if(!lemmes_meilleur.isEmpty()){
+                      //pick the first lemme among the best lemmes
+                      res.add(lemmes_meilleur.get(0));
+                  }else{
+                      ArrayList<String> levenMots;
+                      levenMots = Levenshtein(token);
+                      deleteDuplicates(levenMots);
+                      if(!levenMots.isEmpty()){
+                          //pick the first lemme among the best lemmes
+                          res.add(levenMots.get(0));
+                          //affichier("Levenshtein", CurrentMot, LevenMots);
+                      }else{
+                          res.add(token);}
+                  }
+
+              }
+          }
+          return res;
+      }
+
       public static void main(String[] args) {
             Lexique test = new Lexique();
             BufferedReader br=null;
@@ -157,7 +190,7 @@ class Lexique{
             String token;
             String lemme;
             int Distance_test;
-            ArrayList<String> levenMots = new ArrayList<String>();
+            ArrayList<String> levenMots;
             try {
                  try {
                      Distance_test = TestLevenshtein("mnager","manager");

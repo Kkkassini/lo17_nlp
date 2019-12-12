@@ -3,6 +3,8 @@ import java.util.Scanner;
 //import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.ANTLRReaderStream;
 import org.antlr.runtime.CommonTokenStream;
+import output.tal_interLexer;
+import output.tal_interParser;
 
 
 public class TalMain3 {
